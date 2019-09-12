@@ -4,11 +4,19 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.SystemClock.elapsedRealtime
+import android.view.View
+import android.widget.Button
 import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
 
-    val timer by lazy {
+    lateinit var handler: Handler
+
+    var startTime = elapsedRealtime()
+    private lateinit var runnable: Runnable
+    private var isTimerRunning = true
+
+    val timer: TextView by lazy {
         findViewById<TextView>(R.id.timer)
     }
 
@@ -16,12 +24,22 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initTimer()
+
+        val button: Button = findViewById(R.id.button)
+        button.setOnClickListener {
+            if (isTimerRunning) {
+                handler.removeCallbacks(runnable)
+                isTimerRunning = false
+            } else {
+                handler.postDelayed(runnable, 1)
+                isTimerRunning = true
+            }
+        }
     }
 
     private fun initTimer() {
-        val startTime = elapsedRealtime()
-        val handler = Handler()
-        val runnable: Runnable = object : Runnable {
+        handler = Handler()
+        runnable = object : Runnable {
             override fun run() {
                 val timeDifference = elapsedRealtime() - startTime
                 val seconds = timeDifference / 1000
@@ -32,7 +50,6 @@ class MainActivity : AppCompatActivity() {
                 handler.postDelayed(this, 10)
             }
         }
-
         handler.postDelayed(runnable, 1)
     }
 }
